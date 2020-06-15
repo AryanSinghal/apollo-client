@@ -1,0 +1,138 @@
+<html>
+    <head>
+        <title></title>
+        <link rel="stylesheet" type="text/css" href= "css/style.css" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="http://yui.yahooapis.com/3.18.1/build/cssreset/cssreset-min.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    </head>
+    <body>
+        <div class="co_container">
+            <div class="co_shadow">
+                <div class="co_header">
+                    <div class="co_header__checkout">
+                        <b>Checkout</b>
+                    </div>
+                    <div class="co_header__breadcrumb">
+                        <ul class="co_breadcrumb__list">
+                            <li class="co_breadcrum__shipping">Shipping</li>
+                            <li class="co_breadcrum__payment-method"><b>Payment Method</b></li>
+                            <li class="co_breadcrum__confirmation">Confirmation</li>
+                          </ul>
+                        </div>
+                        <div class="co_header__cross">
+                            <i class="fa fa-window-close" aria-hidden="true"></i>
+                    </div>
+                </div>
+                <div class="co_buy">
+                    <div class="co_payment">
+                        <div class="co_wallet">
+                            <font color= grey><b>Wallet</b></font> <hr> 
+                            <div class="co_cards">
+                                <div class="co_cards__items">
+                                    <img src = "./images/cards/mastercard.png" class="co_cards__image" title="Master Card" alt="mastercard.png"/>
+                                    <p class="co_card__ending-no">Ending with 8899</p> 
+                                </div>
+                                <div class="co_cards__items">
+                                    <img src = "images/cards/discover.png" class="co_cards__image" title="Discover Card" alt="discover.png"/>
+                                    <p class="co_card__ending-no">Ending with 8899</p> 
+                                </div>
+                                <div class="co_cards__items">
+                                    <img src = "./images/cards/visa.png" class="co_cards__image" title="Visa Card" alt="visa.png"/>  
+                                    <p class="co_card__ending-no">Ending with 8899</p> 
+                                </div>
+                            </div>
+                        </div>
+                        <div class="co_new-card">
+                            <font color= grey><b>New Card</b></font> <hr> 
+                            <div class="co_card-details" align="center">
+                                <input type="text" class="co_text" placeholder="Name on Card"/> <br><br>
+                                <input type="text" class="co_text" placeholder="xxxx-xxxx-xxxx-xxxx" maxlength="16" /> <br><br>
+                                <input type="text" class="co_card-details__text" placeholder="mm/yy"/>&nbsp;<input class="co_card-details__text" type="text" placeholder="cvv" maxlength="3"/> <br><br>
+                                <input type="button" value="Continue" id="co_green-button"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="co_cart">
+                       <div class="co_items"> 
+                            <div class="co_items__product">    
+                                <div class="co_product__border">
+                                    <img src = "./images/products/hard-case.jpg" class="co_hard-case" title="Hard Case" alt="hard-case.png"/>
+                                </div>
+                                <div class="co_product__content">                                    
+                                    <div class="co_content__size"><b>Hard Case</b></div>
+                                    <br>
+                                    <div>Black</div>
+                                    <div>Quantity: 1</div>
+                                </div>
+                                <div class="co_content__price co_content__right"> $10.00 </div>
+                            </div>  
+                            <hr>
+                            <div class="co_items__product"> 
+                                <div class="co_product__border">   
+                                    <img src = "./images/products/mobile-holder.jpg" class="co_mobile-holder" title="Mobile Holder" alt="mobile-holder.png"/>
+                                </div>
+                                <div class="co_product__content">
+                                    <div class="co_content__size"><b>Mobile Holder</b></div>
+                                    <br>
+                                    <div>Black</div>
+                                    <div>Quantity: 1</div>
+                                </div>
+                                <div class="co_content__price co_content__right"> $10.00 </div>
+                            </div>
+                            <hr>
+                            <div class="co_items__product">
+                                <div class="co_product__border">    
+                                    <img src = "./images/products/rado.jpg" class="co_rado" title="Rado" alt="rado.png"/>   
+                                </div>
+                                <div class="co_product__content">
+                                    <div class="co_content__size"><b>Rado Watch</b></div>
+                                    <br>
+                                    <div>Black</div>
+                                    <div>Quantity: 1</div>
+                                </div>
+                                <div class="co_content__price co_content__right"> $10.00 </div>
+                            </div>
+                            <hr>
+                            <div class="co_items__product">
+                                <div class="co_product__border">   
+                                    <img src = "./images/products/usb-c-2-micro.jpeg" class="co_usb" title="usb-c-2-micro" alt="usb-c-2-micro.png"/>
+                                </div>
+                                <div class="co_product__content">
+                                    <div class="co_content__size"><b>C type to Micro Converter</b></div>
+                                    <br>
+                                    <div>Black</div>
+                                    <div>Quantity: 1</div>
+                                </div>
+                                <div class="co_content__price co_content__right"> $10.00 </div>
+                            </div>      
+                        </div>  
+                        <div class="co_bill">
+                            <hr width="100%">
+                            <div class="co_bill__content">
+                                <span class="co_content__left">Sub Total</span> 
+                                <span class="co_content__right">$100.00</span>
+                            </div>
+                            <br>
+                            <div class="co_bill__content">
+                                <span class="co_content__left">Shipping</span>
+                                <span class="co_content__right">$10.00</span>
+                            </div>
+                            <br>
+                            <div class="co_bill__content">
+                                <span class="co_content__left">Taxes</span>
+                                <span class="co_content__right">$5.00</span>
+                            </div>
+                            <br>
+                            <hr width="100%">
+                            <div class="co_bill__content">
+                                <span class="co_content__total co_content__left">Total</span>
+                                <span class="co_content__total co_content__right">$115.00</span>
+                            </div>
+                        </div>                
+                    </div>    
+                </div>       
+            </div>    
+        </div>
+    </body>
+</html>
