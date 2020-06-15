@@ -17,8 +17,7 @@ import EmailIcon from '@material-ui/icons/Email';
 import VisibilityOffIcon from '@material-ui/icons/VisibilityOff';
 import LockIcon from '@material-ui/icons/Lock';
 import { SnackbarConsumer } from '../../contexts';
-import { LOGIN_SCHEMA, LOGIN_URL } from '../../configs/constants';
-import callApi from '../../lib/utils/api';
+import { LOGIN_SCHEMA } from '../../configs/constants';
 
 const styles = () => ({
   grid: { height: '90vh' },
@@ -80,20 +79,16 @@ class Login extends React.Component {
     const { history, loginUser } = this.props;
     this.setState({ progressBar: true });
     try {
-      console.log('----------------->before loginUser');
-
-      const data = await loginUser(email, password);
-      console.log('data----------------------->after', data);
-
-      // if (data) {
-      //   localStorage.setItem('token', data);
-      //   history.push('/trainee');
-      // }
+      const { data } = await loginUser({ variables: { email, password } });
+      if (data.loginUser) {
+        localStorage.setItem('token', data.loginUser);
+        this.setState({ progressBar: false });
+        history.push('/trainee');
+      }
     } catch (error) {
-      console.log(error);
+      this.setState({ progressBar: false });
       callback(error.message);
     }
-    this.setState({ progressBar: false });
   }
 
   render() {
@@ -189,6 +184,10 @@ class Login extends React.Component {
 
 Login.propTypes = {
   classes: PropTypes.instanceOf(Object).isRequired,
+  history: PropTypes.shape({
+    push: PropTypes.func.isRequired,
+  }).isRequired,
+  loginUser: PropTypes.func.isRequired,
 };
 
 export default withStyles(styles)(Login);
