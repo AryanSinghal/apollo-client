@@ -75,23 +75,25 @@ class Login extends React.Component {
       ));
   }
 
-  handleSubmit = (callback) => {
+  handleSubmit = async (callback) => {
     const { email, password } = this.state;
+    const { history, loginUser } = this.props;
     this.setState({ progressBar: true });
-    callApi('post', LOGIN_URL, { email, password })
-      .then((response) => {
-        const { data } = response;
-        if (data) {
-          localStorage.setItem('token', data);
-          this.props.history.push('/trainee');
-        }
-      })
-      .catch((err) => {
-        callback(err.message);
-      })
-      .finally(() => {
-        this.setState({ progressBar: false });
-      });
+    try {
+      console.log('----------------->before loginUser');
+
+      const data = await loginUser(email, password);
+      console.log('data----------------------->after', data);
+
+      // if (data) {
+      //   localStorage.setItem('token', data);
+      //   history.push('/trainee');
+      // }
+    } catch (error) {
+      console.log(error);
+      callback(error.message);
+    }
+    this.setState({ progressBar: false });
   }
 
   render() {

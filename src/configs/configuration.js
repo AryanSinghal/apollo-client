@@ -3,7 +3,8 @@ import { config } from 'dotenv';
 config();
 
 const configuration = {
-  baseUrl: process.env.REACT_APP_BASE_URL
+  apolloGraphqlURI: process.env.REACT_APP_APOLLO_GRAPHQL_URL,
+
 };
 
 Object.freeze(configuration);
