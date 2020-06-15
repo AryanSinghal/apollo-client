@@ -1,5 +1,6 @@
 import React from 'react';
 import { Mutation } from '@apollo/react-components';
+import PropTypes from 'prop-types';
 import LOGIN_USER from './mutation';
 import Login from './Login';
 
@@ -10,5 +11,11 @@ const Wrapper = (props) => (
     }
   </Mutation>
 );
+
+Wrapper.propTypes = {
+  history: PropTypes.shape({
+    push: PropTypes.func.isRequired,
+  }).isRequired,
+};
 
 export default Wrapper;
