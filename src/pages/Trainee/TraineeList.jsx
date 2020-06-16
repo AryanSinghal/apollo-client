@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import querystring from 'querystring';
 import { Button } from '@material-ui/core';
 import EditIcon from '@material-ui/icons/Edit';
 import DeleteIcon from '@material-ui/icons/Delete';
+import { graphql } from '@apollo/react-hoc';
 import {
   Table, AddDialog, RemoveDialog, EditDialog,
 } from './components';
@@ -13,6 +14,7 @@ import traineeList from './data/trainee';
 import {
   COLUMNS, ROWS_PER_PAGE, TRAINEE_PATH, SKIP,
 } from '../../configs/constants';
+import GET_TRAINEES from './query';
 
 class TraineeList extends Component {
   constructor(props) {
@@ -22,15 +24,13 @@ class TraineeList extends Component {
       order: 'asc',
       orderBy: '',
       page: 0,
-      count: 0,
       skip: SKIP,
       limit: ROWS_PER_PAGE,
-      traineeData: [],
       deleteDialogOpen: false,
       editDialogOpen: false,
       traineeRecord: {},
       dialogProgressBar: false,
-      tableProgressBar: false,
+      error: false,
     };
   }
 
@@ -72,22 +72,21 @@ class TraineeList extends Component {
   handlePageChange = (page, direction) => {
     let { skip } = this.state;
     const { limit } = this.state;
+    let newPage = page;
     if (direction === 'right') {
-      page += 1;
+      newPage += 1;
       skip += limit;
     } else {
-      page -= 1;
+      newPage -= 1;
       skip -= limit;
     }
-    callApi('get', `${TRAINEE_PATH}?${querystring.stringify({ skip, limit })}`)
-      .then((response) => {
-        const { data } = response;
-        this.setState({ count: data.count, traineeData: data.records });
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-    this.setState({ page, skip });
+    const {
+      data: {
+        refetch,
+      },
+    } = this.props;
+    refetch({ skip, limit });
+    this.setState({ page: newPage, skip });
   }
 
   handleEditDialogOpen = (traineeRecord) => {
@@ -142,47 +141,34 @@ class TraineeList extends Component {
       });
   }
 
-  componentDidMount = () => {
-    this.setState({ tableProgressBar: true });
+  componentDidUpdate = () => {
     const { openSnackbar } = this.context;
-    const { skip, limit } = this.state;
-    callApi('get', `${TRAINEE_PATH}?${querystring.stringify({ skip, limit })}`)
-      .then((response) => {
-        const { data } = response;
-        this.setState({ count: data.count, traineeData: data.records, tableProgressBar: false });
-      })
-      .catch((err) => {
-        this.setState({ tableProgressBar: false, count: 0 });
-        openSnackbar('error', err.message);
-      });
-  }
-
-  componentDidUpdate = (prevProps, prevState) => {
-    if (prevState.dialogProgressBar && !this.state.dialogProgressBar) {
-      let { skip, page } = this.state;
-      const { limit, count, traineeData } = this.state;
-      if (traineeData.length - 1 === 0 && count - 1 > 0) {
-        page -= 1;
-        skip -= limit;
-      }
-      callApi('get', `${TRAINEE_PATH}?${querystring.stringify({ skip, limit })}`)
-        .then((response) => {
-          const { data } = response;
-          this.setState({
-            count: data.count, traineeData: data.records, page, skip,
-          });
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+    const {
+      data: {
+        error,
+      },
+    } = this.props;
+    const { error: err } = this.state;
+    if (!err && error) {
+      openSnackbar('error', error.message);
+      this.setState({ error: true });
     }
   }
 
   render() {
     const {
-      open, orderBy, order, page, deleteDialogOpen, editDialogOpen, traineeRecord,
-      dialogProgressBar, tableProgressBar, count, traineeData,
+      open, orderBy, order, page, deleteDialogOpen,
+      editDialogOpen, traineeRecord, dialogProgressBar,
     } = this.state;
+    const {
+      data: {
+        loading,
+        getAllTrainees: {
+          records = [],
+          count = 0,
+        } = {},
+      },
+    } = this.props;
     return (
       <>
         <div align="right">
@@ -200,7 +186,7 @@ class TraineeList extends Component {
         <br />
         <Table
           id="trainee_id"
-          data={traineeData}
+          data={records}
           columns={COLUMNS}
           orderBy={orderBy}
           order={order}
@@ -223,7 +209,7 @@ class TraineeList extends Component {
           count={count}
           page={page}
           onChangePage={this.handlePageChange}
-          loader={tableProgressBar}
+          loader={loading}
         />
         <ul>
           {
@@ -252,6 +238,25 @@ class TraineeList extends Component {
   }
 }
 
+TraineeList.propTypes = {
+  data: PropTypes.shape({
+    loading: PropTypes.bool.isRequired,
+    error: PropTypes.object,
+    refetch: PropTypes.func,
+    getAllTrainees: PropTypes.shape({
+      records: PropTypes.array,
+      count: PropTypes.number,
+    }),
+  }).isRequired,
+};
+
 TraineeList.contextType = SnackBarContext;
 
-export default TraineeList;
+export default graphql(GET_TRAINEES, {
+  options: {
+    variables: {
+      skip: SKIP,
+      limit: ROWS_PER_PAGE,
+    },
+  },
+})(TraineeList);

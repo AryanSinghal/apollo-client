@@ -20,7 +20,7 @@ const styles = () => ({
 
 const MyTable = (props) => {
   const {
-    id, columns, data, order, orderBy, onSelect, onSort,
+    id, columns, data, order, orderBy, onSelect, onSort, refetch,
     action, page, count, onChangePage, rowsPerPage, classes,
   } = props;
   return (
@@ -104,14 +104,14 @@ const MyTable = (props) => {
                   {count}
                 </span>
                 <IconButton
-                  onClick={() => { onChangePage(page, 'left'); }}
+                  onClick={() => { onChangePage(page, 'left', refetch); }}
                   disabled={page === 0}
                   aria-label="prev page"
                 >
                   <KeyboardArrowLeftIcon />
                 </IconButton>
                 <IconButton
-                  onClick={() => { onChangePage(page, 'right'); }}
+                  onClick={() => { onChangePage(page, 'right', refetch); }}
                   disabled={page >= Math.ceil(count / rowsPerPage) - 1}
                   aria-label="next page"
                 >
