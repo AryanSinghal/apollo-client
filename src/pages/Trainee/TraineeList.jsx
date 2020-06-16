@@ -141,17 +141,15 @@ class TraineeList extends Component {
       });
   }
 
-  componentDidUpdate = () => {
+  componentDidUpdate = (prevProps) => {
     const { openSnackbar } = this.context;
     const {
       data: {
         error,
       },
     } = this.props;
-    const { error: err } = this.state;
-    if (!err && error) {
+    if (!prevProps.data.error && error) {
       openSnackbar('error', error.message);
-      this.setState({ error: true });
     }
   }
 
