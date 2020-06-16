@@ -30,7 +30,6 @@ class TraineeList extends Component {
       editDialogOpen: false,
       traineeRecord: {},
       dialogProgressBar: false,
-      error: false,
     };
   }
 
