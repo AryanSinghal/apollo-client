@@ -111,6 +111,7 @@ class TraineeList extends Component {
       const { traineeRecord: { originalId } } = this.state;
       const { data } = await updateTrainee({ variables: { id: originalId, name, email } });
       this.setState({ traineeRecord: {}, editDialogOpen: false });
+      openSnackbar('success', 'Trainee Successfully Updated');
       console.log('Edited item');
       console.log(data.updateTrainee);
     } catch (err) {
@@ -142,6 +143,7 @@ class TraineeList extends Component {
       this.setState({
         traineeRecord: {}, deleteDialogOpen: false, skip, page,
       });
+      openSnackbar('success', 'Trainee Successfully Deleted');
       console.log('Deleted item');
       console.log(traineeRecord);
     } catch (err) {
