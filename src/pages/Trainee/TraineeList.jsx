@@ -5,16 +5,17 @@ import { Button } from '@material-ui/core';
 import EditIcon from '@material-ui/icons/Edit';
 import DeleteIcon from '@material-ui/icons/Delete';
 import { graphql } from '@apollo/react-hoc';
+import { Mutation } from '@apollo/react-components';
 import {
   Table, AddDialog, RemoveDialog, EditDialog,
 } from './components';
 import { SnackBarContext } from '../../contexts';
-import callApi from '../../lib/utils/api';
 import traineeList from './data/trainee';
 import {
-  COLUMNS, ROWS_PER_PAGE, TRAINEE_PATH, SKIP,
+  COLUMNS, ROWS_PER_PAGE, SKIP,
 } from '../../configs/constants';
 import GET_TRAINEES from './query';
+import { ADD_TRAINEE, EDIT_TRAINEE, DELETE_TRAINEE } from './mutation';
 
 class TraineeList extends Component {
   constructor(props) {
@@ -29,7 +30,6 @@ class TraineeList extends Component {
       deleteDialogOpen: false,
       editDialogOpen: false,
       traineeRecord: {},
-      dialogProgressBar: false,
     };
   }
 
@@ -41,23 +41,21 @@ class TraineeList extends Component {
     this.setState({ open: false });
   };
 
-  handleSubmit = (event) => {
+  handleSubmit = (createTrainee) => async (event) => {
     event.preventDefault();
-    this.setState({ dialogProgressBar: true });
     const name = event.target[0].value;
     const email = event.target[2].value;
     const password = event.target[4].value;
-    console.log({ name, email, password });
     const { openSnackbar } = this.context;
-    callApi('post', TRAINEE_PATH, { name, email, password })
-      .then((data) => {
-        this.setState({ dialogProgressBar: false, open: false });
-        openSnackbar('success', data.message);
-      })
-      .catch((err) => {
-        this.setState({ dialogProgressBar: false });
-        openSnackbar('error', err.message);
-      });
+    try {
+      const { data } = await createTrainee({ variables: { name, email, password } });
+      if (data) {
+        openSnackbar('success', 'Trainee Successfully Created');
+      }
+      this.setState({ open: false });
+    } catch (error) {
+      openSnackbar('error', error.message);
+    }
   };
 
   onSelect = (data) => data
@@ -104,40 +102,35 @@ class TraineeList extends Component {
     this.setState({ traineeRecord: {}, deleteDialogOpen: false });
   }
 
-  handleEditSubmit = (event) => {
+  handleEditSubmit = (updateTrainee) => async (event) => {
     event.preventDefault();
-    this.setState({ dialogProgressBar: true });
     const name = event.target[0].value;
     const email = event.target[2].value;
     const { openSnackbar } = this.context;
-    const { traineeRecord } = this.state;
-    callApi('put', TRAINEE_PATH, { name, email, id: traineeRecord.originalId })
-      .then((response) => {
-        const { data } = response;
-        this.setState({ traineeRecord: {}, editDialogOpen: false, dialogProgressBar: false });
-        console.log('Edited item');
-        console.log({ data, name, email });
-      })
-      .catch((err) => {
-        this.setState({ traineeRecord: {}, dialogProgressBar: false });
-        openSnackbar('error', err.message);
-      });
+    try {
+      const { traineeRecord: { originalId } } = this.state;
+      const { data } = await updateTrainee({ variables: { id: originalId, name, email } });
+      this.setState({ traineeRecord: {}, editDialogOpen: false });
+      console.log('Edited item');
+      console.log(data.updateTrainee);
+    } catch (err) {
+      this.setState({ traineeRecord: {} });
+      openSnackbar('error', err.message);
+    }
   }
 
-  handleDeleteSubmit = () => {
-    this.setState({ dialogProgressBar: true });
+  handleDeleteSubmit = async (deleteTrainee) => {
     const { traineeRecord } = this.state;
     const { openSnackbar } = this.context;
-    callApi('delete', `${TRAINEE_PATH}/${traineeRecord.originalId}`)
-      .then(() => {
-        this.setState({ traineeRecord: {}, deleteDialogOpen: false, dialogProgressBar: false });
-        console.log('Deleted item');
-        console.log(traineeRecord);
-      })
-      .catch((err) => {
-        this.setState({ traineeRecord: {}, dialogProgressBar: false });
-        openSnackbar('error', err.message);
-      });
+    try {
+      await deleteTrainee({ variables: { id: traineeRecord.originalId } });
+      this.setState({ traineeRecord: {}, deleteDialogOpen: false });
+      console.log('Deleted item');
+      console.log(traineeRecord);
+    } catch (err) {
+      this.setState({ traineeRecord: {} });
+      openSnackbar('error', err.message);
+    }
   }
 
   componentDidUpdate = (prevProps) => {
@@ -154,8 +147,7 @@ class TraineeList extends Component {
 
   render() {
     const {
-      open, orderBy, order, page, deleteDialogOpen,
-      editDialogOpen, traineeRecord, dialogProgressBar,
+      open, orderBy, order, page, deleteDialogOpen, editDialogOpen, traineeRecord, skip, limit,
     } = this.state;
     const {
       data: {
@@ -166,6 +158,7 @@ class TraineeList extends Component {
         } = {},
       },
     } = this.props;
+    const variables = { skip, limit };
     return (
       <>
         <div align="right">
@@ -174,12 +167,19 @@ class TraineeList extends Component {
           </Button>
           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         </div>
-        <AddDialog
-          open={open}
-          onClose={this.handleClose}
-          onSubmit={this.handleSubmit}
-          progressBar={dialogProgressBar}
-        />
+        <Mutation mutation={ADD_TRAINEE} refetchQueries={[{ query: GET_TRAINEES, variables }]}>
+          {
+            (createTrainee, { loading: createProgressBar }) => (
+              <AddDialog
+                open={open}
+                onClose={this.handleClose}
+                createTrainee={createTrainee}
+                onSubmit={this.handleSubmit}
+                progressBar={createProgressBar}
+              />
+            )
+          }
+        </Mutation>
         <br />
         <Table
           id="trainee_id"
@@ -217,19 +217,33 @@ class TraineeList extends Component {
             ))
           }
         </ul>
-        <RemoveDialog
-          open={deleteDialogOpen}
-          onClose={this.handleDeleteDialogClose}
-          onSubmit={this.handleDeleteSubmit}
-          progressBar={dialogProgressBar}
-        />
-        <EditDialog
-          open={editDialogOpen}
-          onClose={this.handleEditDialogClose}
-          onSubmit={this.handleEditSubmit}
-          data={traineeRecord}
-          progressBar={dialogProgressBar}
-        />
+        <Mutation mutation={DELETE_TRAINEE} refetchQueries={[{ query: GET_TRAINEES, variables }]}>
+          {
+            (deleteTrainee, { loading: deleteProgressBar }) => (
+              <RemoveDialog
+                open={deleteDialogOpen}
+                onClose={this.handleDeleteDialogClose}
+                onSubmit={this.handleDeleteSubmit}
+                deleteTrainee={deleteTrainee}
+                progressBar={deleteProgressBar}
+              />
+            )
+          }
+        </Mutation>
+        <Mutation mutation={EDIT_TRAINEE} refetchQueries={[{ query: GET_TRAINEES, variables }]}>
+          {
+            (updateTrainee, { loading: updateProgressBar }) => (
+              <EditDialog
+                open={editDialogOpen}
+                onClose={this.handleEditDialogClose}
+                onSubmit={this.handleEditSubmit}
+                updateTrainee={updateTrainee}
+                data={traineeRecord}
+                progressBar={updateProgressBar}
+              />
+            )
+          }
+        </Mutation>
       </>
     );
   }
