@@ -120,11 +120,28 @@ class TraineeList extends Component {
   }
 
   handleDeleteSubmit = async (deleteTrainee) => {
-    const { traineeRecord } = this.state;
+    const { traineeRecord, limit } = this.state;
+    let { skip, page } = this.state;
     const { openSnackbar } = this.context;
     try {
       await deleteTrainee({ variables: { id: traineeRecord.originalId } });
-      this.setState({ traineeRecord: {}, deleteDialogOpen: false });
+      const {
+        data: {
+          refetch,
+          getAllTrainees: {
+            records = [],
+            count = 0,
+          } = {},
+        },
+      } = this.props;
+      if (records.length - 1 === 0 && count - 1 > 0) {
+        page -= 1;
+        skip -= limit;
+        refetch({ skip, limit });
+      }
+      this.setState({
+        traineeRecord: {}, deleteDialogOpen: false, skip, page,
+      });
       console.log('Deleted item');
       console.log(traineeRecord);
     } catch (err) {
