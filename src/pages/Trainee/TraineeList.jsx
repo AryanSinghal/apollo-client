@@ -120,28 +120,11 @@ class TraineeList extends Component {
   }
 
   handleDeleteSubmit = async (deleteTrainee) => {
-    const { traineeRecord, limit } = this.state;
-    let { skip, page } = this.state;
+    const { traineeRecord } = this.state;
     const { openSnackbar } = this.context;
     try {
       await deleteTrainee({ variables: { id: traineeRecord.originalId } });
-      const {
-        data: {
-          refetch,
-          getAllTrainees: {
-            records = [],
-            count = 0,
-          } = {},
-        },
-      } = this.props;
-      if (records.length - 1 === 0 && count - 1 > 0) {
-        page -= 1;
-        skip -= limit;
-        refetch({ skip, limit });
-      }
-      this.setState({
-        traineeRecord: {}, deleteDialogOpen: false, skip, page,
-      });
+      this.setState({ traineeRecord: {}, deleteDialogOpen: false });
       openSnackbar('success', 'Trainee Successfully Deleted');
       console.log('Deleted item');
       console.log(traineeRecord);
@@ -180,9 +163,13 @@ class TraineeList extends Component {
       document: TRAINEE_DELETED,
       updateQuery: (prev, { subscriptionData }) => {
         if (!subscriptionData.data) return prev;
-        const { getAllTrainees: { records } } = prev;
+        const { getAllTrainees: { records, count } } = prev;
         const { data: { traineeDeleted } } = subscriptionData;
         const updatedRecords = records.filter((record) => (record.originalId !== traineeDeleted));
+        const { page } = this.state;
+        if (records.length - 1 === 0 && count - 1 > 0) {
+          this.handlePageChange(page, 'left');
+        }
         return {
           getAllTrainees: {
             ...prev.getAllTrainees,
