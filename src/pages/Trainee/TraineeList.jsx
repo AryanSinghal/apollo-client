@@ -48,10 +48,8 @@ class TraineeList extends Component {
     const password = event.target[4].value;
     const { openSnackbar } = this.context;
     try {
-      const { data } = await createTrainee({ variables: { name, email, password } });
-      if (data) {
-        openSnackbar('success', 'Trainee Successfully Created');
-      }
+      await createTrainee({ variables: { name, email, password } });
+      openSnackbar('success', 'Trainee Successfully Created');
       this.setState({ open: false });
     } catch (error) {
       openSnackbar('error', error.message);
