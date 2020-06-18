@@ -16,6 +16,7 @@ import {
 } from '../../configs/constants';
 import GET_TRAINEES from './query';
 import { ADD_TRAINEE, EDIT_TRAINEE, DELETE_TRAINEE } from './mutation';
+import { TRAINEE_UPDATED, TRAINEE_DELETED } from './subscription';
 
 class TraineeList extends Component {
   constructor(props) {
@@ -150,6 +151,49 @@ class TraineeList extends Component {
     }
   }
 
+  componentDidMount = () => {
+    const { data: { subscribeToMore } } = this.props;
+    subscribeToMore({
+      document: TRAINEE_UPDATED,
+      updateQuery: (prev, { subscriptionData }) => {
+        if (!subscriptionData.data) return prev;
+        const { getAllTrainees: { records } } = prev;
+        const { data: { traineeUpdated } } = subscriptionData;
+        const updatedRecords = records.map((record) => {
+          if (record.originalId === traineeUpdated.id) {
+            delete traineeUpdated.id;
+            return { ...record, ...traineeUpdated };
+          }
+          return record;
+        });
+        return {
+          getAllTrainees: {
+            ...prev.getAllTrainees,
+            count: prev.getAllTrainees.count,
+            records: updatedRecords,
+          },
+        };
+      },
+    });
+
+    subscribeToMore({
+      document: TRAINEE_DELETED,
+      updateQuery: (prev, { subscriptionData }) => {
+        if (!subscriptionData.data) return prev;
+        const { getAllTrainees: { records } } = prev;
+        const { data: { traineeDeleted } } = subscriptionData;
+        const updatedRecords = records.filter((record) => (record.originalId !== traineeDeleted));
+        return {
+          getAllTrainees: {
+            ...prev.getAllTrainees,
+            count: prev.getAllTrainees.count,
+            records: updatedRecords,
+          },
+        };
+      },
+    });
+  }
+
   componentDidUpdate = (prevProps) => {
     const { openSnackbar } = this.context;
     const {
@@ -234,7 +278,7 @@ class TraineeList extends Component {
             ))
           }
         </ul>
-        <Mutation mutation={DELETE_TRAINEE} refetchQueries={[{ query: GET_TRAINEES, variables }]}>
+        <Mutation mutation={DELETE_TRAINEE}>
           {
             (deleteTrainee, { loading: deleteProgressBar }) => (
               <RemoveDialog
@@ -247,7 +291,7 @@ class TraineeList extends Component {
             )
           }
         </Mutation>
-        <Mutation mutation={EDIT_TRAINEE} refetchQueries={[{ query: GET_TRAINEES, variables }]}>
+        <Mutation mutation={EDIT_TRAINEE}>
           {
             (updateTrainee, { loading: updateProgressBar }) => (
               <EditDialog
@@ -268,6 +312,7 @@ class TraineeList extends Component {
 
 TraineeList.propTypes = {
   data: PropTypes.shape({
+    subscribeToMore: PropTypes.func.isRequired,
     loading: PropTypes.bool.isRequired,
     error: PropTypes.object,
     refetch: PropTypes.func,
