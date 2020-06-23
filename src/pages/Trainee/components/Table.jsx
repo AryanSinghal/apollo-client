@@ -138,10 +138,13 @@ MyTable.propTypes = {
   page: PropTypes.number,
   data: PropTypes.arrayOf(Object).isRequired,
   count: PropTypes.number.isRequired,
-  orderBy: PropTypes.string,
-  order: PropTypes.oneOf(['asc', 'desc']),
+  orderBy: PropTypes.string.isRequired,
+  order: PropTypes.oneOf(['asc', 'desc']).isRequired,
   onSort: PropTypes.func.isRequired,
   onSelect: PropTypes.func.isRequired,
+  onChangePage: PropTypes.func.isRequired,
+  action: PropTypes.arrayOf(Object).isRequired,
+  classes: PropTypes.instanceOf(Object).isRequired,
 };
 
 MyTable.defaultProps = {
