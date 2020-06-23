@@ -17,7 +17,7 @@ import PropTypes from 'prop-types';
 class EditDialog extends React.Component {
   render() {
     const {
-      open, onSubmit, onClose, data, progressBar,
+      open, onSubmit, onClose, data, progressBar, updateTrainee,
     } = this.props;
     return (
       <>
@@ -27,7 +27,7 @@ class EditDialog extends React.Component {
           onClose={onClose}
         >
           <DialogTitle>Edit Trainee</DialogTitle>
-          <form onSubmit={onSubmit}>
+          <form onSubmit={onSubmit(updateTrainee)}>
             <DialogContent>
               <DialogContentText>
                 Enter your trainee details
@@ -96,8 +96,9 @@ EditDialog.propTypes = {
   onSubmit: PropTypes.func.isRequired,
   onClose: PropTypes.func.isRequired,
   open: PropTypes.bool.isRequired,
-  data: PropTypes.object.isRequired,
+  data: PropTypes.instanceOf(Object).isRequired,
   progressBar: PropTypes.bool.isRequired,
+  updateTrainee: PropTypes.func.isRequired,
 };
 
 export { EditDialog };

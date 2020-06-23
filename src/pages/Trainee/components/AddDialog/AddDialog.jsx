@@ -97,12 +97,14 @@ export class AddDialog extends React.Component {
     const {
       nameError, emailError, passwordError, confirmPasswordError,
     } = this.state;
-    const { open, onSubmit, onClose, progressBar } = this.props;
+    const {
+      open, onSubmit, onClose, progressBar, createTrainee,
+    } = this.props;
     return (
       <div>
         <Dialog fullWidth open={open} onClose={onClose} aria-labelledby="form-dialog-title">
           <DialogTitle id="form-dialog-title">ADD TRAINEE</DialogTitle>
-          <form onSubmit={onSubmit}>
+          <form onSubmit={onSubmit(createTrainee)}>
             <DialogContent>
               <DialogContentText>
                 Enter Your Trainee Details
@@ -197,14 +199,14 @@ export class AddDialog extends React.Component {
                 CANCEL
               </Button>
               <Button
-                type='submit'
+                type="submit"
                 endIcon={
                   (progressBar)
                     ? <CircularProgress />
                     : ''
                 }
                 disabled={this.isDisabled() || progressBar}
-                color='primary'
+                color="primary"
                 autoFocus
               >
                 Submit
@@ -221,4 +223,6 @@ AddDialog.propTypes = {
   onSubmit: PropTypes.func.isRequired,
   onClose: PropTypes.func.isRequired,
   open: PropTypes.bool.isRequired,
+  progressBar: PropTypes.bool.isRequired,
+  createTrainee: PropTypes.func.isRequired,
 };

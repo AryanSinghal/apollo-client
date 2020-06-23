@@ -12,7 +12,7 @@ import PropTypes from 'prop-types';
 
 export const RemoveDialog = (props) => {
   const {
-    open, onSubmit, onClose, progressBar,
+    open, onSubmit, onClose, progressBar, deleteTrainee,
   } = props;
   return (
     <>
@@ -32,7 +32,7 @@ export const RemoveDialog = (props) => {
             Cancel
           </Button>
           <Button
-            onClick={onSubmit}
+            onClick={() => { onSubmit(deleteTrainee); }}
             endIcon={
               (progressBar)
                 ? <CircularProgress />
@@ -55,4 +55,5 @@ RemoveDialog.propTypes = {
   onClose: PropTypes.func.isRequired,
   open: PropTypes.bool.isRequired,
   progressBar: PropTypes.bool.isRequired,
+  deleteTrainee: PropTypes.func.isRequired,
 };
