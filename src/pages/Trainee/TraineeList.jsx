@@ -16,6 +16,7 @@ import {
 } from '../../configs/constants';
 import GET_TRAINEES from './query';
 import { ADD_TRAINEE, EDIT_TRAINEE, DELETE_TRAINEE } from './mutation';
+import { TRAINEE_UPDATED, TRAINEE_DELETED } from './subscription';
 
 class TraineeList extends Component {
   constructor(props) {
@@ -119,28 +120,11 @@ class TraineeList extends Component {
   }
 
   handleDeleteSubmit = async (deleteTrainee) => {
-    const { traineeRecord, limit } = this.state;
-    let { skip, page } = this.state;
+    const { traineeRecord } = this.state;
     const { openSnackbar } = this.context;
     try {
       await deleteTrainee({ variables: { id: traineeRecord.originalId } });
-      const {
-        data: {
-          refetch,
-          getAllTrainees: {
-            records = [],
-            count = 0,
-          } = {},
-        },
-      } = this.props;
-      if (records.length - 1 === 0 && count - 1 > 0) {
-        page -= 1;
-        skip -= limit;
-        refetch({ skip, limit });
-      }
-      this.setState({
-        traineeRecord: {}, deleteDialogOpen: false, skip, page,
-      });
+      this.setState({ traineeRecord: {}, deleteDialogOpen: false });
       openSnackbar('success', 'Trainee Successfully Deleted');
       console.log('Deleted item');
       console.log(traineeRecord);
@@ -148,6 +132,53 @@ class TraineeList extends Component {
       this.setState({ traineeRecord: {} });
       openSnackbar('error', err.message);
     }
+  }
+
+  componentDidMount = () => {
+    const { data: { subscribeToMore } } = this.props;
+    subscribeToMore({
+      document: TRAINEE_UPDATED,
+      updateQuery: (prev, { subscriptionData }) => {
+        if (!subscriptionData.data) return prev;
+        const { getAllTrainees: { records } } = prev;
+        const { data: { traineeUpdated } } = subscriptionData;
+        const updatedRecords = records.map((record) => {
+          if (record.originalId === traineeUpdated.id) {
+            delete traineeUpdated.id;
+            return { ...record, ...traineeUpdated };
+          }
+          return record;
+        });
+        return {
+          getAllTrainees: {
+            ...prev.getAllTrainees,
+            count: prev.getAllTrainees.count,
+            records: updatedRecords,
+          },
+        };
+      },
+    });
+
+    subscribeToMore({
+      document: TRAINEE_DELETED,
+      updateQuery: (prev, { subscriptionData }) => {
+        if (!subscriptionData.data) return prev;
+        const { getAllTrainees: { records, count } } = prev;
+        const { data: { traineeDeleted } } = subscriptionData;
+        const updatedRecords = records.filter((record) => (record.originalId !== traineeDeleted));
+        const { page } = this.state;
+        if (records.length - 1 === 0 && count - 1 > 0) {
+          this.handlePageChange(page, 'left');
+        }
+        return {
+          getAllTrainees: {
+            ...prev.getAllTrainees,
+            count: count - 1,
+            records: updatedRecords,
+          },
+        };
+      },
+    });
   }
 
   componentDidUpdate = (prevProps) => {
@@ -234,7 +265,7 @@ class TraineeList extends Component {
             ))
           }
         </ul>
-        <Mutation mutation={DELETE_TRAINEE} refetchQueries={[{ query: GET_TRAINEES, variables }]}>
+        <Mutation mutation={DELETE_TRAINEE}>
           {
             (deleteTrainee, { loading: deleteProgressBar }) => (
               <RemoveDialog
@@ -247,7 +278,7 @@ class TraineeList extends Component {
             )
           }
         </Mutation>
-        <Mutation mutation={EDIT_TRAINEE} refetchQueries={[{ query: GET_TRAINEES, variables }]}>
+        <Mutation mutation={EDIT_TRAINEE}>
           {
             (updateTrainee, { loading: updateProgressBar }) => (
               <EditDialog
@@ -268,6 +299,7 @@ class TraineeList extends Component {
 
 TraineeList.propTypes = {
   data: PropTypes.shape({
+    subscribeToMore: PropTypes.func.isRequired,
     loading: PropTypes.bool.isRequired,
     error: PropTypes.object,
     refetch: PropTypes.func,
