@@ -173,7 +173,7 @@ class TraineeList extends Component {
         return {
           getAllTrainees: {
             ...prev.getAllTrainees,
-            count: prev.getAllTrainees.count,
+            count: count - 1,
             records: updatedRecords,
           },
         };
